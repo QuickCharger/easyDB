@@ -17,8 +17,18 @@ app.use(async (req, res, next) => {
   next()
 })
 
+let fs = require('fs')
+app.use(async (req, res, next) => {
+  if (req.originalUrl === '/_easydb/manage') {
+    let c = fs.readFileSync('./index.html')
+    res.send(c)
+    return
+  }
+  next()
+})
+
 // app.use('/actionhistory', require('./routes/ActionHistory'))
-app.use("/_table", require("./router/Table"))
+app.use("/_easydb", require("./router/_easydb"))
 app.use("*", require("./router/_router"))
 
 // error handler
