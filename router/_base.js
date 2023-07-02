@@ -118,6 +118,7 @@ class BaseRouter {
     }
 
     let row = (await model.findOne({ where: req.body })) || {}
+    row = JSON.parse(JSON.stringify(row))
     ret.data = await this.afterView(req, res, row)
     res.send(ret)
   }
@@ -132,10 +133,10 @@ class BaseRouter {
     if (beforeCreateRet != null)
       return res.send(beforeCreateRet)
 
-    let r = await model.create(req.body)
-    r = await model.findOne({ where: { Id: r.Id } })
-    r = JSON.parse(JSON.stringify(r))
-    ret.data = await this.afterCreated(req, res, r)
+    let row = await model.create(req.body)
+    row = await model.findOne({ where: { Id: row.Id } })
+    row = JSON.parse(JSON.stringify(row))
+    ret.data = await this.afterCreated(req, res, row)
     res.send(ret)
   }
 
@@ -254,6 +255,9 @@ class BaseRouter {
 
   async beforeView (req, res) { }
   async afterView (req, res, row) {
+    row.Creation = undefined
+    row.LastModified = undefined
+    row.deletedAt = undefined
     return row
   }
 
