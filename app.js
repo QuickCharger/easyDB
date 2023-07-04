@@ -41,6 +41,7 @@ setTimeout(async () => {
   let db = require("./lib/easy/Database")
   db.Config({ dbName: "EasyDB" })
   let r = await db.Run()
+  let c = r
 }, 100)
 
 module.exports = app

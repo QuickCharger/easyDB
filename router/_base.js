@@ -12,14 +12,14 @@ const {
   ToNumber,
   ToString,
 } = require("../lib/easy/easy")
-const { sequelize, Op } = require("../lib/easy/Database")
+const db = require("../lib/easy/Database")
 
 class BaseRouter {
   constructor() {
     this.router = express.Router()
     this.CONSTANT_MESSAGE = CONSTANT_MESSAGE
     this.model = null
-    this.Op = Op
+    this.Op = db.Op
 
     this.IsBool = IsBool
     this.IsNumber = IsNumber
@@ -96,7 +96,7 @@ class BaseRouter {
     if (order.length == 0) order.push(["Id", "DESC"])
 
     let { count, rows } = await model.findAndCountAll({
-      where: sequelize.literal(literal.join(" and ")),
+      where: db.sequelize.literal(literal.join(" and ")),
       order,
       offset,
       limit,
@@ -247,7 +247,9 @@ class BaseRouter {
   registerRouter (parent) { }
 
   async beforeIndexList (req, res) {
-    return req.body
+    let ret = req.body
+    ret.filters = ret.filters || []
+    return ret
   }
   async afterIndexList (rows) {
     return rows
