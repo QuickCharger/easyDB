@@ -6,14 +6,14 @@ class Router extends BaseRouter {
     this.router.post("*", async (req, res) => {
       let path = req.originalUrl.split("/")
       if (path.length < 3) {
-        parent.sendERROR(res, null, "invalid path")
+        return parent.sendERROR(res, null, "invalid path")
       }
-      let module = path[1]
-      let func = path[2]
+      let module = path[path.length - 2]
+      let func = path[path.length - 1]
       if (
         ["index", "view", "create", "update", "destroy"].indexOf(func) === -1
       ) {
-        parent.sendERROR(res, null, "invalid function")
+        return parent.sendERROR(res, null, "invalid function")
       }
 
       let orm = db.GetORM(module)

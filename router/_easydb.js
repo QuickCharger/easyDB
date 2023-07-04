@@ -48,6 +48,17 @@ class Table extends BaseRouter {
         parent.sendERROR(res, null, r[1])
     })
 
+    this.router.post('/brief', async (req, res) => {
+      let orm = db._innerOrm
+      let tables = await orm.findAll()
+      parent.sendOK(res, [
+        {
+          dbName: 'EasyDB',   // todo
+          tables: tables,
+        }
+      ])
+    })
+
     this.router.post("*", async (req, res) => {
       res.send({ result: -1, message: "接口未开放" })
     })

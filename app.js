@@ -9,9 +9,7 @@ app.use(bodyParser.urlencoded({ extended: true }))
 
 app.use(async (req, res, next) => {
   console.log(``)
-  console.log(
-    `request for ${req.originalUrl}. now ${new Date().toLocaleString()}`
-  )
+  console.log(`request for ${req.originalUrl}. now ${new Date().toLocaleString()}`)
   console.log(`user: ${JSON.stringify(req.user)}`)
   console.log(`body: ${JSON.stringify(req.body)}`)
   next()
@@ -19,15 +17,14 @@ app.use(async (req, res, next) => {
 
 let fs = require('fs')
 app.use(async (req, res, next) => {
-  if (req.originalUrl === '/_easydb/manage') {
+  if (req.originalUrl === '/') {
     let c = fs.readFileSync('./index.html')
-    res.send(c)
+    res.send(c.toString())
     return
   }
   next()
 })
 
-// app.use('/actionhistory', require('./routes/ActionHistory'))
 app.use("/_easydb", require("./router/_easydb"))
 app.use("*", require("./router/_router"))
 

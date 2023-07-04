@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" />
+  <title>EasyDB</title>
+  <script type="text/javascript" src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+  <script type="text/javascript"
+    src="https://cdnjs.cloudflare.com/ajax/libs/mobx/6.9.0/mobx.umd.production.min.js"></script>
+
+
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
+  <!-- Don't use this in production: -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dayjs/1.11.9/dayjs.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/antd/5.6.4/antd.min.js"></script>
+  <link href='https://cdnjs.cloudflare.com/ajax/libs/antd/5.6.4/reset.min.css'>
+
+
+  <script>
+    function Post (path = '/', obj) {
+      return new Promise((resolve, reject) => {
+        if (path[0] !== '/')
+          path = '/' + path
+        $.ajax({
+          type: 'POST',
+          url: `${path}`,
+          dataType: 'json',
+          data: obj,
+          success: function (res) {
+            Number(res.status) === 1 ? resolve(res) : resolve(res)
+          },
+          fail: function (xhr, ajaxOptions, thrownError) {
+            reject(false)
+          },
+        })
+      })
+    }
+  </script>
+
+
+  <script type="text/babel">
+    // 数据
+    let MainList = [
+      { Name: '主页', JumpTo: '/', Module: <MainHome /> },
+      { Name: '表操作', JumpTo: '/db', Module: <MainDB /> },
+      { Name: 'todo', JumpTo: '/todo', Module: <div>todo</div> },
+    ]
+    // let Brief = {}
+    let curDB = ''
+    let curTable = ''
+
+    // function
+    function Navi ({ Path, onPathChange }) {
+      return <div className="navLink">
+        {MainList.map((it, idx) => <a
+          key={idx}
+          className={Path === it.JumpTo ? 'curHightLight' : ''}
+          onClick={() => { console.log('onclick'); onPathChange(it.JumpTo) }}
+        > {it.Name}</a>)}
+      </div>
+    }
+    function Main ({ Path }) {
+      let m = MainList.find(it => it.JumpTo === Path)
+      return m ? m.Module : <h1>page not found</h1>
+    }
+    function MainHome () {
+      return <>
+        <h1>this is a home page</h1>
+      </>
+    }
+    function MainDB () {
+      let genDB = () => {
+        return <div className='border' style={{ width: '20%', height: '100%', padding: '0.5em' }}>
+          <antd.Button type="primary">add DB todo</antd.Button>
+          <antd.Table columns={
+            [{
+              title: 'Name',
+              dataIndex: 'dbName',
+              key: 'dbName',
+              render: (text) => <a>{text}</a>,
+            },]
+          } dataSource={''} />
+          this is all DB
+        </div>
+      }
+      let genTable = () => {
+        return <div className='border' style={{ width: '20%', height: '100%', padding: '0.5em' }}>
+          <button>add TABLE todo</button>
+          <ul style={{ listStyleType: 'none', padding: '0' }}>
+            <li>tb1</li>
+            <li>tb2</li>
+            <li>tb3</li>
+          </ul>
+          this is all TABLE
+        </div>
+      }
+      let genData = () => {
+        // return <div className='border' style={{ width: '100%', height: '70%' }}> </div>
+        return <antd.Table columns={[
+          {
+            title: '表内容',
+            dataIndex: 'todo',
+            key: 'todo',
+          },
+        ]} />
+      }
+      let genDesc = () => {
+        return <div className='border' style={{ width: '100%', height: '30%' }}>Desc</div>
+      }
+      return <div style={{ display: 'flex', flexDirection: 'row', height: '80vh' }}>
+        {genDB()}
+        {genTable()}
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          // alignItems: 'center',
+          // justifyContent: 'center',
+          width: '60%',
+        }}>
+          {genData()}
+          {genDesc()}
+        </div>
+      </div>
+    }
+    function MyApp () {
+      let [_Path, setPath] = React.useState('/db')
+      let [brief, setBrief] = React.useState({})
+
+      // 数据初始化
+      React.useEffect(() => {
+        (async () => {
+          let r = await Post('/_easydb/brief')
+          brief = r.data
+          console.log(brief)
+        })()
+      }, [])
+
+      return <>
+        <Navi Path={_Path} onPathChange={(p) => { setPath(p) }} />
+        <Main Path={_Path} />
+      </>
+    }
+
+    const container = document.getElementById('root')
+    const root = ReactDOM.createRoot(container)
+    root.render(<MyApp />);
+
+  </script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    .border {
+      border: 1px solid black;
+    }
+
+    li {
+      user-select: none;
+    }
+
+    li:nth-child(even) {
+      background-color: white;
+    }
+
+    li:nth-child(odd) {
+      background-color: rgb(236, 236, 236);
+    }
+
+    body {
+      background-color: white;
+    }
+
+    .navHead {
+      background-color: white;
+      text-align: center;
+      padding: 2em;
+    }
+
+    .navLink {
+      background-color: #333;
+      margin-bottom: 1em;
+      margin-left: 1em;
+      margin-right: 1em;
+    }
+
+    .navLink a {
+      display: inline-block;
+      padding: 1em;
+      color: white;
+    }
+
+    .navLink a:last-child {
+      position: absolute;
+      right: 1em;
+    }
+
+    .navLink a:hover {
+      background-color: white;
+      color: black;
+    }
+
+    .navLink .curHightLight {
+      background-color: rgb(225, 171, 144);
+      color: black;
+    }
+
+    .main {
+      display: inline-block;
+      width: 74%;
+      vertical-align: top;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="root">empty</div>
+  <!--
+      Note: this page is a great way to try React but it's not suitable for production.
+      It slowly compiles JSX with Babel in the browser and uses a large development build of React.
+
+      Read this page for starting a new React project with JSX:
+      https://react.dev/learn/start-a-new-react-project
+
+      Read this page for adding React with JSX to an existing project:
+      https://react.dev/learn/add-react-to-an-existing-project
+    -->
+</body>
+
+</html>
