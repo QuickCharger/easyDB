@@ -12,7 +12,7 @@ let create = {
 		{ Name: 't2', Type: 'int' },
 	]
 }
-//common.run('/_easydb/create', create, false);
+common.run('/_easydb/create', create, false);
 
 let update = {
 	TableName: 'test1',
@@ -25,4 +25,4 @@ let update = {
 let destroy = {
 	TableName: 'test2',
 }
-common.run('/_easydb/destroy', destroy, false)
+//common.run('/_easydb/destroy', destroy, false)

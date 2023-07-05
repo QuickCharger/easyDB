@@ -15,15 +15,17 @@ app.use(async (req, res, next) => {
   next()
 })
 
-let fs = require('fs')
-app.use(async (req, res, next) => {
-  if (req.originalUrl === '/') {
-    let c = fs.readFileSync('./index.html')
-    res.send(c.toString())
-    return
-  }
-  next()
-})
+const path = require('path')
+app.use(express.static(path.join(__dirname, 'public')))
+// let fs = require('fs')
+// app.use(async (req, res, next) => {
+//   if (req.originalUrl === '/') {
+//     let c = fs.readFileSync('./index.html')
+//     res.send(c.toString())
+//     return
+//   }
+//   next()
+// })
 
 app.use("/_easydb", require("./router/_easydb"))
 app.use("*", require("./router/_router"))
@@ -41,7 +43,6 @@ setTimeout(async () => {
   let db = require("./lib/easy/Database")
   db.Config({ dbName: "EasyDB" })
   let r = await db.Run()
-  let c = r
 }, 100)
 
 module.exports = app
