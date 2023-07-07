@@ -17,7 +17,6 @@
   <script src="/antd.min.js"></script>
   <link href='/reset.min.css'>
 
-
   <script>
     function Post (path = '/', obj) {
       return new Promise((resolve, reject) => {
@@ -49,36 +48,50 @@
         { Name: '表操作', JumpTo: '/db', Module: <PageDB /> },
         { Name: 'todo', JumpTo: '/todo', Module: <div>todo</div> },
       ]
+      // 导航
       let [curPath, setCurPath] = React.useState('/db')
+      // 当前选定DB
       let [curDB, setCurDB] = React.useState('')
+      // 当前选定table
       let [curTable, setCurTable] = React.useState('')
+      // 选定的table的内容
       let [curTableContent, setCurTableContent] = React.useState([])
+      // 选定的table的desc的footer
+      let [curDescFooter, setCurDescFooter] = React.useState({})
+
+      // 数据库的brief
       let [brief, setBrief] = React.useState([])
 
+      const [messageApi, contextHolder] = antd.message.useMessage()
+
+      let PostBrief = async () => {
+        let r = await Post('/_easydb/brief')
+        // 如果只有一个DB 则默认选中此DB
+        if (r.data.length === 1) {
+          setCurDB(r.data[0].dbName)
+          // 如果只有一个tabel 则默认选中此table
+          if (r.data[0].tables.length === 1) {
+            setCurTable(r.data[0].tables[0].TableName)
+          }
+        }
+        setBrief(r.data)
+      }
+      let PostIndex = async () => {
+        if (curTable.length === 0)
+          return
+        let r = await Post(`/${curTable}/index`)
+        setCurTableContent(r.data.list)
+      }
       // 数据初始化
       React.useEffect(() => {
         (async () => {
-          let r = await Post('/_easydb/brief')
-          // 如果只有一个DB 则默认选中此DB
-          if (r.data.length === 1) {
-            setCurDB(r.data[0].dbName)
-            // 如果只有一个tabel 则默认选中此table
-            if (r.data[0].tables.length === 1) {
-              setCurTable(r.data[0].tables[0].TableName)
-            }
-          }
-          setBrief(r.data)
+          await PostBrief()
         })()
       }, [])
 
       // 表内容初始化
       React.useEffect(() => {
-        if (curTable.length === 0)
-          return
-        (async () => {
-          let r = await Post(`/${curTable}/index`)
-          setCurTableContent(r.data.list)
-        })()
+        PostIndex()
       }, [curTable])
 
       // 导航栏
@@ -141,6 +154,26 @@
               key: it.Name,
             })
           }
+          ret.push(
+            {
+              title: '',
+              key: 'operation',
+              fixed: 'right',
+              width: 100,
+              render: (v) => <antd.Button
+                danger
+                onClick={async () => {
+                  let r = await Post(`/${curTable}/destroy`, { Ids: [v.Id] })
+                  if (r.code !== 0) {
+                    antd.message.error('err message')
+                  } else {
+                    antd.message.success('destroy message')
+                    await PostIndex()
+                  }
+
+                }}
+              >DEL</antd.Button>,
+            },)
           return ret
         }
         let getTableContent = () => {
@@ -150,9 +183,37 @@
           }
           return ret
         }
+        let getDescHeader = () => {
+          let ret = []
+          let db = brief.find(it => it.dbName === curDB)
+          if (db === undefined)
+            return ret
+          let table = db.tables.find(it => it.TableName === curTable)
+          if (table === undefined || table.Column.length === 0)
+            return ret
+          // 假设以[0]的数据作为基准
+          for (let key in table.Column[0]) {
+            ret.push({
+              title: key,
+              dataIndex: key,
+              key,
+            })
+          }
+          return ret
+        }
+        let getDescContent = () => {
+          let ret = []
+          let db = brief.find(it => it.dbName === curDB)
+          if (db === undefined)
+            return ret
+          let table = db.tables.find(it => it.TableName === curTable)
+          if (table === undefined || table.Column.length === 0)
+            return ret
+          ret = table.Column
+          return ret
+        }
         let modDB = () => {
           return <div className='border' style={{ width: '20%', height: '100%', padding: '0.5em' }}>
-            <antd.Button type="primary">add DB todo</antd.Button>
             <antd.Table columns={
               [{
                 title: '',
@@ -166,22 +227,75 @@
         let modTable = () => {
           return <div className='border' style={{ width: '20%', height: '100%', padding: '0.5em' }}>
             <antd.Button type="primary">add TABLE todo</antd.Button>
-            <antd.Table columns={
-              [{
-                title: '',
-                dataIndex: 'tableName',
-                key: 'tableName',
-                render: (text) => <a onClick={() => { setCurTable(text) }}>{text}</a>,
-              },]
-            } dataSource={getAllTables()} />
+            <antd.Table
+              pagination={false}
+              columns={
+                [{
+                  title: '',
+                  dataIndex: 'tableName',
+                  key: 'tableName',
+                  render: (text) => <a onClick={() => { setCurTable(text) }}>{text}</a>,
+                },]
+              }
+              dataSource={getAllTables()} />
           </div>
         }
         let modData = () => {
           // return <div className='border' style={{ width: '100%', height: '70%' }}> </div>
-          return <antd.Table style={{ width: '100%', height: '70%' }} columns={getTableHeader()} dataSource={getTableContent()} />
+          return <antd.Table style={{ width: '100%', height: '70%' }}
+            size='middle'
+            footer={() =>
+              <antd.Form
+                layout='inline'
+                onFinish={''}
+              >
+                <antd.Form.Item label="新增字段名称" name='Name' required>
+                  <antd.Input placeholder="name" />
+                </antd.Form.Item>
+              </antd.Form>
+            }
+            columns={getTableHeader()}
+            dataSource={getTableContent()} />
         }
         let modDesc = () => {
-          return <div className='border' style={{ width: '100%', height: '30%' }}>Desc</div>
+          // return <div className='border' style={{ width: '100%', height: '30%' }}>Desc</div>
+          return <antd.Table style={{ width: '100%', height: '30%' }}
+            size='small'
+            columns={getDescHeader()}
+            dataSource={getDescContent()}
+            footer={() =>
+              <antd.Form
+                layout='inline'
+                onFinish={async (vs) => {
+                  let r = await Post('/_easydb/update', {
+                    TableName: curTable,
+                    Column: [vs]
+                  })
+                  if (r.code !== 0) {
+                    antd.message.error('err message')
+                  } else {
+                    antd.message.success('success message')
+                    await PostBrief()
+                  }
+                }}
+              >
+                <antd.Form.Item label="新增字段名称" name='Name' required>
+                  <antd.Input placeholder="name" />
+                </antd.Form.Item>
+                <antd.Form.Item label="类型" name='Type' required>
+                  <antd.Select style={{ width: '150px' }}>
+                    <antd.Select.Option value="int" default>int</antd.Select.Option>
+                    <antd.Select.Option value="varchar(255)">varchar(255)</antd.Select.Option>
+                    <antd.Select.Option value="text">text</antd.Select.Option>
+                    <antd.Select.Option value="timestamp">timestamp</antd.Select.Option>
+                  </antd.Select>
+                </antd.Form.Item>
+                <antd.Form.Item>
+                  <antd.Button type="primary" htmlType="submit">新增</antd.Button>
+                </antd.Form.Item>
+              </antd.Form>
+            }
+          />
         }
         return <div style={{ display: 'flex', flexDirection: 'row', height: '80vh' }}>
           {modDB()}
