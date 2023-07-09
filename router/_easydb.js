@@ -3,6 +3,13 @@ const db = require("../lib/easy/Database")
 const easy = require("../lib/easy/easy")
 
 class Table extends BaseRouter {
+
+  async beforeCreate (req, res, ret) {
+    if (!easy.IsArray(req.body.Column)) {
+      req.body.Column = []
+    }
+  }
+
   registerRouter (parent) {
     this.router.post("/index", async (req, res) => {
       await parent.index(req, res, db.ormEasyDB)
@@ -13,12 +20,10 @@ class Table extends BaseRouter {
     })
 
     this.router.post("/create", async (req, res) => {
-      if (!easy.IsString(req.body.TableName)) {
+      if (!easy.IsString(req.body.TableName) || req.body.TableName.length === 0) {
         return parent.sendERROR(res)
       }
-      if (!easy.IsArray) {
-        return parent.sendERROR(req.body.Column)
-      }
+      parent.beforeCreate(req, res)
       await db.Create(req.body)
       parent.sendOK(res)
     })
