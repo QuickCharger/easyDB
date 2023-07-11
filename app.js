@@ -1,6 +1,7 @@
 let express = require("express")
 let bodyParser = require("body-parser")
 let cors = require("cors")
+let Config = require('./config')
 
 let app = express()
 app.use(cors())
@@ -41,7 +42,7 @@ app.listen(3000, () => {
 
 setTimeout(async () => {
   let db = require("./lib/easy/Database")
-  db.Config({ dbName: "EasyDB" })
+  db.Config(Config.sequelize)
   let r = await db.Run()
 }, 100)
 
