@@ -36,7 +36,7 @@ app.use(function (err, req, res, next) {
   res.send({ result: -1, message: "error" })
 })
 
-app.listen(3000, () => {
+app.listen(Config.listen, () => {
   console.log("run")
 })
 

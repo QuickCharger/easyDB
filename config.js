@@ -2,6 +2,8 @@ const path = require('path')
 
 const DBName = 'EasyDB'
 module.exports = {
+    listen: 3000,
+
     sequelize: {
         dialect: 'sqlite',  // 'mysql' || 'sqlite'
         dbName: DBName,     // mysql时的数据库名 或 sqlite时的文件名称
