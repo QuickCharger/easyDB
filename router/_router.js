@@ -1,5 +1,5 @@
 const { BaseRouter } = require("./_base")
-const db = require("../lib/easy/Database")
+const db = require("../lib/Database")
 
 class Router extends BaseRouter {
   registerRouter (parent) {

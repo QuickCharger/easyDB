@@ -11,8 +11,8 @@ const {
   IsDefined,
   ToNumber,
   ToString,
-} = require("../lib/easy/easy")
-const db = require("../lib/easy/Database")
+} = require("easy")
+const db = require("../lib/Database")
 
 class BaseRouter {
   constructor() {

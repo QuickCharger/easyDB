@@ -41,7 +41,7 @@ app.listen(Config.listen, () => {
 })
 
 setTimeout(async () => {
-  let db = require("./lib/easy/Database")
+  let db = require("./lib/Database")
   db.Config(Config.sequelize)
   let r = await db.Run()
 }, 100)

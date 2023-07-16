@@ -1,6 +1,6 @@
-const { BaseRouter } = require("./_base")
-const db = require("../lib/easy/Database")
-const easy = require("../lib/easy/easy")
+const { BaseRouter } = require('./_base')
+const db = require('../lib/Database')
+const easy = require('easy')
 
 class Table extends BaseRouter {
 
