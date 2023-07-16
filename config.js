@@ -1,7 +1,7 @@
 const path = require('path')
 
 const DBName = 'EasyDB'
-module.exports = {
+let config = {
     listen: 3000,
 
     sequelize: {
@@ -12,3 +12,14 @@ module.exports = {
         logging: console.log,
     }
 }
+
+
+if (process.argv.find((it) => it === 'release')) {
+    console.log('release')
+    config.logging = false
+} else {
+    console.log('develop')
+}
+
+
+module.exports = config

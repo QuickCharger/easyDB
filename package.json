@@ -1,18 +1,20 @@
 {
   "name": "easydb",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "a easy light database and backend to use",
+  "version": "0.0.1",
+  "private": false,
+  "author": "QuickCharger<bdgboss12@gmail.com>",
+  "main": "app.js",
   "scripts": {
-    "start": "node ./app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "debug": "node ./app.js debug",
+    "start": "node ./app.js release",
+    "start_mysql": "node ./app.js release mysql"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/QuickCharger/easyDB.git"
   },
   "keywords": [],
-  "author": "",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/QuickCharger/easyDB/issues"
@@ -25,5 +27,8 @@
     "mysql2": "^3.4.2",
     "sequelize": "^6.32.1",
     "sqlite3": "^5.1.6"
+  },
+  "engines": {
+    "node": ">= 16.0.0"
   }
 }
