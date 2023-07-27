@@ -6,21 +6,23 @@ let view = {
 //common.run('/_easydb/view', view, false);
 
 let create = {
+	DBName: null,
 	TableName: 'test2',
-	Column: [
+	Columns: [
 		{ Name: 't1', Type: 'int' },
-		{ Name: 't2', Type: 'int' },
+		{ Name: 't2', Type: 'string' },
 	]
 }
-common.run('/_easydb/create', create, false);
+//common.run('/_easydb/create', create, false);
 
 let update = {
 	TableName: 'test1',
-	Column: [
-		{ Name: 'b2', Type: 'int' },
+	Columns: [
+		{ Name: 't1', Type: 'int' },
+		{ Name: 't2', Type: 'string' },
 	]
 }
-//common.run('/_easydb/update', update, false);
+common.run('/_easydb/update', update, false);
 
 let destroy = {
 	TableName: 'test2',

@@ -24,22 +24,33 @@ class Table extends BaseRouter {
         return parent.sendERROR(res)
       }
       parent.beforeCreate(req, res)
-      await db.Create(req.body)
+      let { DBName, TableName, Columns } = req.body
+      await db.Create({
+        Table: {
+          TableName,
+          Columns,
+        },
+        DBName
+      })
       parent.sendOK(res)
     })
 
     this.router.post("/update", async (req, res) => {
-      if (!easy.IsString(req.body.TableName)) {
+      let { DBName, TableName, Columns } = req.body
+      if (!easy.IsString(TableName)) {
         return parent.sendERROR(res)
       }
-      if (!easy.IsArray) {
-        return parent.sendERROR(req.body.Column)
+      if (!easy.IsArray(Columns)) {
+        return parent.sendERROR(res)
       }
-      let r = await db.Update(req.body)
-      if (r)
-        parent.sendERROR(res, null, r)
-      else
-        parent.sendOK(res)
+      await db.Update({
+        Table: {
+          TableName,
+          Columns,
+        },
+        DBName
+      })
+      parent.sendOK(res)
     })
 
     this.router.post("/destroy", async (req, res) => {
@@ -54,7 +65,7 @@ class Table extends BaseRouter {
     })
 
     this.router.post('/brief', async (req, res) => {
-      let orm = db._innerOrm
+      let orm = db.ormEasyDB
       let tables = await orm.findAll()
       parent.sendOK(res, [
         {

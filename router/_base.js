@@ -96,7 +96,7 @@ class BaseRouter {
     if (order.length == 0) order.push(["Id", "DESC"])
 
     let { count, rows } = await model.findAndCountAll({
-      where: db.sequelize.literal(literal.join(" and ")),
+      where: model.sequelize.literal(literal.join(" and ")),
       order,
       offset,
       limit,

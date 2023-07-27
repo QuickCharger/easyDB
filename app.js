@@ -18,15 +18,6 @@ app.use(async (req, res, next) => {
 
 const path = require('path')
 app.use(express.static(path.join(__dirname, 'public')))
-// let fs = require('fs')
-// app.use(async (req, res, next) => {
-//   if (req.originalUrl === '/') {
-//     let c = fs.readFileSync('./index.html')
-//     res.send(c.toString())
-//     return
-//   }
-//   next()
-// })
 
 app.use("/_easydb", require("./router/_easydb"))
 app.use("*", require("./router/_router"))
@@ -40,10 +31,13 @@ app.listen(Config.listen, () => {
   console.log("run")
 })
 
+process.on('uncaughtException', (err) => {
+  console.error(err)
+})
+
 setTimeout(async () => {
   let db = require("./lib/Database")
-  db.Config(Config.sequelize)
-  let r = await db.Run()
+  await db.Run(Config.sql_config)
 }, 100)
 
 module.exports = app
