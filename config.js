@@ -19,22 +19,27 @@ let config = {
     // when run in release, use sqlite or mysql
     // release运行时 使用sqlite或mysql
     sql_config: {
+        storage_path: path.join(__dirname, `db`),
+
         // sqlite
         dialect: 'sqlite',
-        storage_path: path.join(__dirname, `db`),
         // logging: console.log,
         logging: false,
 
-        // // mysql
+        // mysql
         // dialect: 'mysql',
         // host: "127.0.0.1",
         // port: 3306,
         // username: "root",
         // password: "123456",
         // // dbName: "mysql",     // 此处使用EasyDB表的数据
-        // logging: console.log,
-        // // logging: false,
-        // timezone: "+00:00",
+        // // logging: console.log,
+        // logging: false,
+        // timezone: 'Europe/Paris',
+        // dialectOptions: {
+        //     // createDatabase: true,
+        //     timezone: 'local',
+        // },
     }
     // for user modify. end  // 用户修改部分。 结束
 }

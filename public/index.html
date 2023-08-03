@@ -18,12 +18,16 @@
   <link href="/reset.min.css" />
 
   <script>
-    function Post (path = '/', obj) {
+    // header里的key全部小写！！！
+    function Post (path = '/', obj = {}, header = {}) {
       return new Promise((resolve, reject) => {
         if (path[0] !== '/')
           path = '/' + path
         console.log(`request for ${path}. obj ${JSON.stringify(obj) || JSON.stringify({})}`)
         $.ajax({
+          headers: {
+            ...header
+          },
           type: 'POST',
           url: `${path}`,
           dataType: 'json',
@@ -51,35 +55,54 @@
       // 导航
       let [curPath, setCurPath] = React.useState('/db')
       // 当前选定DB
-      let [curDB, setCurDB] = React.useState('')
+      let [curDBName, setCurDBName] = React.useState('')
       // 当前选定table
-      let [curTable, setCurTable] = React.useState('')
-      // 选定的table的内容
+      let [curTableName, setCurTableName] = React.useState('')
+      // 选定的table的所有内容
       let [curTableContent, setCurTableContent] = React.useState([])
       // 选定的table的desc的footer
       let [curDescFooter, setCurDescFooter] = React.useState({})
 
-      // 数据库的brief
-      let [brief, setBrief] = React.useState([])
+      /*
+      * 数据库的brief
+      * {
+      *   `DBName`: {
+      *     `TableName`: [{Name, Type},{Name, Type}]
+      *   },
+      *   `DBName`: {
+      *     `TableName`: [{Name, Type},{Name, Type}]
+      *   },
+      * }
+      */
+      let [brief, setBrief] = React.useState({})
 
       const [messageApi, contextHolder] = antd.message.useMessage()
 
       let PostBrief = async () => {
         let r = await Post('/_easydb/brief')
-        // 如果只有一个DB 则默认选中此DB
-        if (r.data.length === 1) {
-          setCurDB(r.data[0].dbName)
-          // 如果只有一个tabel 则默认选中此table
-          if (r.data[0].tables.length === 1) {
-            setCurTable(r.data[0].tables[0].TableName)
+        // 规范化
+        let brief = {}
+        {
+          for (let it of r.data.Tables) {
+            if (!brief[it.DBName])
+              brief[it.DBName] = {}
+            brief[it.DBName][it.TableName] = it.Columns
           }
         }
-        setBrief(r.data)
+        // 如果只有一个DB 则默认选中此DB
+        if (Object.keys(brief).length === 1) {
+          let k = Object.keys(brief)[0]
+          setCurDBName(k)
+          if (Object.keys(brief[k]).length === 1) {
+            setCurTableName(Object.keys(brief[k])[0])
+          }
+        }
+        setBrief(brief)
       }
       let PostIndex = async () => {
-        if (curTable.length === 0)
+        if (curTableName.length === 0)
           return
-        let r = await Post(`/${curTable}/index`)
+        let r = await Post(`/${curTableName}/index`, {}, { dbname: curDBName })
         setCurTableContent(r.data.list)
       }
       // 数据初始化
@@ -92,7 +115,7 @@
       // 表内容初始化
       React.useEffect(() => {
         PostIndex()
-      }, [curTable])
+      }, [curTableName])
 
       // 导航栏
       let Navi = () => {
@@ -123,45 +146,13 @@
         </>
       }
       function PageDB () {
-        let getAllDB = () => {
-          let ret = []
-          for (let db of brief) {
-            ret.push({ dbName: db.dbName, key: db.dbName })
-          }
-          return ret
-        }
-        let getAllTables = () => {
-          let ret = []
-          if (brief.length === 0)
-            return ret
-          let db = brief.find(it => it.dbName === curDB)
-          if (db === undefined)
-            return ret
-          for (let it of db.tables)
-            ret.push({ tableName: it.TableName, key: it.TableName })
-          return ret
-        }
-        // 表内容的header
+        // 右上 表内容的header
         let getTableHeader = () => {
-          let ret = []
-          let db = brief.find(it => it.dbName === curDB)
-          if (db === undefined)
-            return ret
-          let table = db.tables.find(it => it.TableName === curTable)
-          if (table === undefined)
-            return ret
-          ret.push({
-            title: 'Id',
-            dataIndex: 'Id',
-            key: 'Id',
-          })
-          for (let it of table.Column) {
-            ret.push({
-              title: it.Name,
-              dataIndex: it.Name,
-              key: it.Name,
-            })
-          }
+          if (curDBName === '' || curTableName === '')
+            return []
+          let ret = [{ title: 'Id', dataIndex: 'Id', key: 'Id' }]
+          brief[curDBName][curTableName].map(it => ret.push({ title: it.Name, dataIndex: it.Name, key: it.Name }))
+          // del
           ret.push({
             title: '',
             key: 'operation',
@@ -171,7 +162,7 @@
               <antd.Button
                 danger
                 onClick={async () => {
-                  let r = await Post(`/${curTable}/destroy`, { Ids: [v.Id] })
+                  let r = await Post(`/${curTableName}/destroy`, { Ids: [v.Id] }, { dbname: curDBName })
                   if (r.code !== 0) {
                     antd.message.error('err message')
                   } else {
@@ -185,42 +176,8 @@
           })
           return ret
         }
-        let getTableContent = () => {
-          let ret = []
-          for (let it of curTableContent) {
-            ret.push({ key: it.Id, ...it })
-          }
-          return ret
-        }
-        let getDescHeader = () => {
-          let ret = []
-          let db = brief.find(it => it.dbName === curDB)
-          if (db === undefined)
-            return ret
-          let table = db.tables.find(it => it.TableName === curTable)
-          if (table === undefined || table.Column.length === 0)
-            return ret
-          // 假设以[0]的数据作为基准
-          for (let key in table.Column[0]) {
-            ret.push({
-              title: key,
-              dataIndex: key,
-              key,
-            })
-          }
-          return ret
-        }
-        let getDescContent = () => {
-          let ret = []
-          let db = brief.find(it => it.dbName === curDB)
-          if (db === undefined)
-            return ret
-          let table = db.tables.find(it => it.TableName === curTable)
-          if (table === undefined || table.Column.length === 0)
-            return ret
-          ret = table.Column
-          return ret
-        }
+
+        // 左
         let modDB = () => {
           return (
             <div
@@ -230,23 +187,21 @@
                 columns={[
                   {
                     title: '',
-                    dataIndex: 'dbName',
-                    key: 'dbName',
+                    dataIndex: 'DBName',
+                    key: 'DBName',
                     render: (text) => (
-                      <a
-                        onClick={() => {
-                          setCurDB(text)
-                        }}>
+                      <a onClick={() => { setCurDBName(text) }}>
                         {text}
                       </a>
                     ),
                   },
                 ]}
-                dataSource={getAllDB()}
+                dataSource={Object.keys(brief).map(it => { return { DBName: it, key: it } })}
               />
             </div>
           )
         }
+        // 中
         let modTable = () => {
           return (
             <div
@@ -255,10 +210,12 @@
               <antd.Form
                 layout="inline"
                 onFinish={async (v) => {
-                  let r = await Post('/_easydb/create', {
-                    TableName: v.TableName,
-                    Column: [],
-                  })
+                  let r = await Post('/_easydb/create',
+                    {
+                      TableName: v.TableName,
+                      Column: [],
+                    },
+                  )
                   if (r.code !== 0) {
                     antd.message.error('err message')
                   } else {
@@ -280,19 +237,17 @@
                 columns={[
                   {
                     title: '',
-                    dataIndex: 'tableName',
-                    key: 'tableName',
+                    dataIndex: 'TableName',
+                    key: 'TableName',
                     render: (text) => (
-                      <a
-                        onClick={() => {
-                          setCurTable(text)
-                        }}>
+                      <a onClick={() => { setCurTableName(text) }}>
                         {text}
                       </a>
                     ),
                   },
                 ]}
-                dataSource={getAllTables()}
+                dataSource={curDBName === '' ? [] :
+                  Object.keys(brief[curDBName]).map(it => { return { TableName: it, key: it } })}
               />
             </div>
           )
@@ -307,7 +262,7 @@
                 <antd.Form
                   layout="inline"
                   onFinish={async (vs) => {
-                    let r = await Post(`/${curTable}/create`, vs)
+                    let r = await Post(`/${curTableName}/create`, vs, { dbname: curDBName })
                     if (r.code !== 0) {
                       antd.message.error('err message')
                     } else {
@@ -332,7 +287,7 @@
                 </antd.Form>
               )}
               columns={getTableHeader()}
-              dataSource={getTableContent()}
+              dataSource={curTableContent && curTableContent.map((it) => { return { key: it.Id, ...it } })}
             />
           )
         }
@@ -342,16 +297,24 @@
             <antd.Table
               style={{ width: '100%', height: '30%' }}
               size="small"
-              columns={getDescHeader()}
-              dataSource={getDescContent()}
+              columns={
+                ['Name', 'Type'].map(it => { return { title: it, dataIndex: it, key: it } })
+              }
+              dataSource={(curDBName === '' || curTableName === '') ? [] : brief[curDBName][curTableName].map(it => { return { ...it } })}
               footer={() => (
                 <antd.Form
                   layout="inline"
                   onFinish={async (vs) => {
-                    let r = await Post('/_easydb/update', {
-                      TableName: curTable,
-                      Column: [vs],
-                    })
+                    let columns = [...brief[curDBName][curTableName], vs]
+                    console.log(`columns`)
+                    console.log(columns)
+                    let r = await Post('/_easydb/update',
+                      {
+                        DBName: curDBName,
+                        TableName: curTableName,
+                        Columns: columns,
+                      },
+                    )
                     if (r.code !== 0) {
                       antd.message.error('err message')
                     } else {
@@ -359,10 +322,10 @@
                       await PostBrief()
                     }
                   }}>
-                  <antd.Form.Item label="新增字段名称" name="Name" required>
+                  <antd.Form.Item label="Name" name="Name" required>
                     <antd.Input placeholder="name" />
                   </antd.Form.Item>
-                  <antd.Form.Item label="类型" name="Type" required>
+                  <antd.Form.Item label="Type" name="Type" required>
                     <antd.Select style={{ width: '150px' }}>
                       <antd.Select.Option value="int" default>
                         int

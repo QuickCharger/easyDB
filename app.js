@@ -38,6 +38,9 @@ process.on('uncaughtException', (err) => {
 setTimeout(async () => {
   let db = require("./lib/Database")
   await db.Run(Config.sql_config)
+
+  // 打开管理后台
+  // require('child_process').exec(`start http://127.0.0.1:3000`)
 }, 100)
 
 module.exports = app

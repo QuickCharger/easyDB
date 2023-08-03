@@ -25,6 +25,7 @@ class Table extends BaseRouter {
       }
       parent.beforeCreate(req, res)
       let { DBName, TableName, Columns } = req.body
+      Columns = Columns || []
       await db.Create({
         Table: {
           TableName,
@@ -54,25 +55,25 @@ class Table extends BaseRouter {
     })
 
     this.router.post("/destroy", async (req, res) => {
-      if (!easy.IsString(req.body.TableName)) {
+      let { DBName, TableName } = req.body
+      if (!easy.IsString(TableName)) {
         return parent.sendERROR(res)
       }
-      let r = await db.Destroy(req.body)
-      if (r[0] === true)
-        parent.sendOK(res)
-      else
-        parent.sendERROR(res, null, r[1])
+      await db.Destroy({
+        Table: {
+          TableName,
+        },
+        DBName
+      })
+      parent.sendOK(res)
     })
 
     this.router.post('/brief', async (req, res) => {
       let orm = db.ormEasyDB
       let tables = await orm.findAll()
-      parent.sendOK(res, [
-        {
-          dbName: 'EasyDB',   // todo
-          tables: tables,
-        }
-      ])
+      parent.sendOK(res, {
+        Tables: tables
+      })
     })
 
     this.router.post("*", async (req, res) => {

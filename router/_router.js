@@ -16,7 +16,7 @@ class Router extends BaseRouter {
         return parent.sendERROR(res, null, "invalid function")
       }
 
-      let orm = db.GetORM(module)
+      let orm = db.GetORM(module, req.headers.dbname)
       if (!orm) {
         return parent.sendERROR(res, null, "invalid module")
       }

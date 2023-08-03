@@ -22,7 +22,7 @@
   "homepage": "https://github.com/QuickCharger/easyDB#readme",
   "dependencies": {
     "cors": "^2.8.5",
-    "easy": "git+https://github.com/QuickCharger/easy.git",
+    "easy": "github:QuickCharger/easy#v0.0.1",
     "express": "^4.18.2",
     "mysql2": "^3.4.2",
     "sequelize": "^6.32.1",
