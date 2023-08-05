@@ -2,6 +2,7 @@ let express = require("express")
 let bodyParser = require("body-parser")
 let cors = require("cors")
 let Config = require('./config')
+const DB = require("./lib/Database")
 
 let app = express()
 app.use(cors())
@@ -18,9 +19,37 @@ app.use(async (req, res, next) => {
 
 const path = require('path')
 app.use(express.static(path.join(__dirname, 'public')))
+app.use('/_easydb', require('./router/_easydb'))
 
-app.use("/_easydb", require("./router/_easydb"))
-app.use("*", require("./router/_router"))
+// fill req.DB
+// fill req.Model
+app.use(async (req, res, next) => {
+  let path = req.originalUrl.split("/")
+  if (path.length < 3) {
+    return res.send({
+      code: -1,
+      message: "invalid path",
+      data: data || {},
+    })
+  }
+  let module = path[path.length - 2] // TableName
+  let func = path[path.length - 1]  // index, view, create, update, destroy
+  req.DB = DB.GetDB(req.headers.dbname)
+  if (!req.DB) {
+    return res.send({
+      code: -1,
+      message: "invalid DB",
+      data: data || {},
+    })
+  }
+  req.Model = DB.GetORM(module, req.headers.dbname)
+  next()
+})
+// demo
+app.use('/test', require('./router/Test'))
+
+// 通用处理 放在最后
+app.use('*', require('./router/_router'))
 
 // error handler
 app.use(function (err, req, res, next) {

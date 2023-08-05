@@ -12,7 +12,7 @@ function init (a_path, a_contentLength, a_remote = null) {
             'Content-Type': 'application/x-www-form-urlencoded',
             'Content-Length': a_contentLength,
             'user-type': "consultants",
-            origin: 'api.neobusinesz.com',
+			'dbname': 'User',
         }
     }
 
