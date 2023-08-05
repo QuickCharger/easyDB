@@ -28,8 +28,8 @@ app.use(async (req, res, next) => {
   if (path.length < 3) {
     return res.send({
       code: -1,
-      message: "invalid path",
-      data: data || {},
+      message: `invalid path ${path}`,
+      data: {},
     })
   }
   let module = path[path.length - 2] // TableName
@@ -38,8 +38,8 @@ app.use(async (req, res, next) => {
   if (!req.DB) {
     return res.send({
       code: -1,
-      message: "invalid DB",
-      data: data || {},
+      message: `invalid DB ${req.headers.dbname}`,
+      data: {},
     })
   }
   req.Model = DB.GetORM(module, req.headers.dbname)

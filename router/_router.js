@@ -16,21 +16,21 @@ class Router extends BaseRouter {
         return parent.sendERROR(res, null, "invalid function")
       }
 
-      let orm = db.GetORM(module, req.headers.dbname)
-      if (!orm) {
+      let model = req.Model
+      if (!model) {
         return parent.sendERROR(res, null, "invalid module")
       }
 
       if (func === "index") {
-        await parent.index(req, res, orm)
+        await parent.index(req, res, model)
       } else if (func === "view") {
-        await parent.view(req, res, orm)
+        await parent.view(req, res, model)
       } else if (func === "create") {
-        await parent.create(req, res, orm)
+        await parent.create(req, res, model)
       } else if (func === "update") {
-        await parent.update(req, res, orm)
+        await parent.update(req, res, model)
       } else if (func === "destroy") {
-        await parent.destroy(req, res, orm)
+        await parent.destroy(req, res, model)
       }
     })
   }

@@ -18,7 +18,7 @@ class BaseRouter {
   constructor() {
     this.router = express.Router()
     this.CONSTANT_MESSAGE = CONSTANT_MESSAGE
-    this.model = null
+    // this.model = null
     this.Op = db.Op
 
     this.IsBool = IsBool
@@ -203,11 +203,11 @@ class BaseRouter {
   }
 
   getRouter (model) {
-    try {
-      this.model = require(`../orm/${this.__proto__.constructor.name}`)
-    } catch (e) {
-      this.model = null
-    }
+    // try {
+    //   this.model = require(`../orm/${this.__proto__.constructor.name}`)
+    // } catch (e) {
+    //   this.model = null
+    // }
 
     // 注册子类中新增的接口
     this.registerRouter(this)
@@ -215,28 +215,28 @@ class BaseRouter {
     // 注册公共路由 重复注册的路由会注册失败
     {
       this.router.post("/index", async (req, res) => {
-        if (this.model != null) {
-          await this.index(req, res, this.model)
+        if (req.Model != null) {
+          await this.index(req, res, req.Model)
         }
       })
       this.router.post("/view", async (req, res) => {
-        if (this.model != null) {
-          await this.view(req, res, this.model)
+        if (req.Model != null) {
+          await this.view(req, res, req.Model)
         }
       })
       this.router.post("/create", async (req, res) => {
-        if (this.model != null) {
-          await this.create(req, res, this.model)
+        if (req.Model != null) {
+          await this.create(req, res, req.Model)
         }
       })
       this.router.post("/update", async (req, res) => {
-        if (this.model != null) {
-          await this.update(req, res, this.model)
+        if (req.Model != null) {
+          await this.update(req, res, req.Model)
         }
       })
       this.router.post("/destroy", async (req, res) => {
-        if (this.model != null) {
-          await this.destroy(req, res, this.model)
+        if (req.Model != null) {
+          await this.destroy(req, res, req.Model)
         }
       })
     }
