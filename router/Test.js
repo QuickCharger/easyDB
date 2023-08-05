@@ -4,14 +4,12 @@ class Test extends BaseRouter {
 
 	registerRouter (parent) {
 		parent.router.post('/create', async (req, res) => {
+			// let model = req.Model
 			let modelTest = req.DB.orm['test']
 			await modelTest.create(req.body)
 
-			if (!req.Model) {
-				return this.sendERROR(res, null, 'model null')
-			}
-
-			await parent.create(req, res, req.Model)
+			const ret = parent.initRet(this.CONSTANT_MESSAGE.RESULT.ADMINISTRATOR_OK)
+			res.send(ret)
 		})
 	}
 }
