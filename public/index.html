@@ -197,6 +197,7 @@
               className="border"
               style={{ width: '20%', height: '100%', padding: '0.5em' }}>
               <antd.Table
+                rowClassName={(record, index) => { return record.DBName === curDBName ? 'bg-gray' : '' }}
                 columns={[
                   {
                     title: '',
@@ -247,6 +248,7 @@
               </antd.Form>
               <antd.Table
                 pagination={false}
+                rowClassName={(record, index) => { return record.TableName === curTableName ? 'bg-gray' : '' }}
                 columns={[
                   {
                     title: '',
@@ -370,6 +372,7 @@
             {modDB()}
             {modTable()}
             <div
+              className='border'
               style={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -417,8 +420,8 @@
 
     body {
       background-color: white;
-      padding-left: 1em;
-      padding-right: 1em;
+      /* padding-left: 1em;
+      padding-right: 1em; */
     }
 
     .navHead {
@@ -453,6 +456,10 @@
     .navLink .curHightLight {
       background-color: rgb(225, 171, 144);
       color: black;
+    }
+
+    .bg-gray {
+      background-color: RGB(220, 220, 220);
     }
   </style>
 </head>
